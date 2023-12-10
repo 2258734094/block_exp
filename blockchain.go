@@ -51,9 +51,43 @@ func (bc *Blockchain) AddBlock(data string) {
 }
 
 func NewGenesisBlock() *Block {
-	return NewBlock("Genesis others", []byte{})
+	return NewBlock("Genesis Block", []byte{})
 }
 
 //func NewBlockchain() *Blockchain {
 //	return &Blockchain{[]*others{NewGenesisBlock()}} //创建一个新的指针切片，并向其中添加一个元素。这个元素是由 NewGenesisBlock() 函数返回的新创世区块的地址。
 //}
+
+func NewBlockchain() *Blockchain {
+	var tip []byte
+	db, err := bolt.Open("dbFile", 0600, nil)
+
+	if err != nil {
+		panic(err)
+	}
+
+	err = db.Update(func(tx *bolt.Tx) error {
+		b := tx.Bucket([]byte("blocksBucket"))
+
+		if b == nil {
+			genesis := NewGenesisBlock()
+			b, err := tx.CreateBucket([]byte("blocksBucket"))
+
+			if err != nil {
+				panic(err)
+			}
+
+			err = b.Put(genesis.Hash, genesis.Serialize())
+			err = b.Put([]byte("l"), genesis.Hash)
+			tip = genesis.Hash
+		} else {
+			tip = b.Get([]byte("l"))
+		}
+
+		return nil
+	})
+
+	bc := Blockchain{tip, db}
+
+	return &bc
+}
