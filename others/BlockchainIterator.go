@@ -1,4 +1,4 @@
-package main
+package others
 
 import "github.com/boltdb/bolt"
 
@@ -8,7 +8,7 @@ type BlockchainIterator struct {
 }
 
 func (bc *Blockchain) Iterator() *BlockchainIterator {
-	bci := &BlockchainIterator{bc.tip, bc.db}
+	bci := &BlockchainIterator{bc.tip, bc.Db}
 
 	return bci
 }
